@@ -21,7 +21,7 @@ function init() {
 
     // Texture
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load('path_to_your_360_image.jpg'); // Replace with your 360 image path
+    const texture = textureLoader.load('github website/Keycap.glb'); // Replace with your 360 image path
 
     // Material
     const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
