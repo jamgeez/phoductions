@@ -1,101 +1,67 @@
-let scene, camera, renderer, mesh;
+// Initialize scene, camera, and renderer
+let scene, camera, renderer, controls;
 
 init();
 animate();
 
 function init() {
-    import { OrbitControls } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js';
-    
-    const controls = new OrbitControls(camera, renderer.domElement);
-
-    import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js';
-
-    const loader = new GLTFLoader();
-    loader.load("github website/Keycap.glb", (gltf) => {
-    const model = gltf.scene;
-    scene.add(model);
-    
-    });
-    // Scene
+    // 1. Create Scene
     scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xffffff); // White background
 
-    // Camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // 2. Create Camera
+    camera = new THREE.PerspectiveCamera(
+        75, // Field of view
+        window.innerWidth / window.innerHeight, // Aspect ratio
+        0.1, // Near clipping plane
+        1000 // Far clipping plane
+    );
     camera.position.z = 5;
 
-    // Renderer
+    // 3. Create Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('render-container').appendChild(renderer.domElement);
+    renderer.setSize(600, 400); // Match container size
+    document.getElementById('model-container').appendChild(renderer.domElement);
 
-    // Geometry
-    const geometry = new THREE.SphereGeometry(2, 32, 32);
+    // 4. Add Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(0, 1, 0);
+    scene.add(directionalLight);
 
-    // Texture
-    const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load("github website/Keycap.glb"); // Replace with your 360 image path
-
-    // Material
-    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-
-    // Mesh
-    mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    // Mouse controls
-    let isDragging = false;
-    let previousMousePosition = {
-        x: 0,
-        y: 0
-    };
-
-    document.addEventListener('mousedown', function(e) {
-        isDragging = true;
-    });
-
-    document.addEventListener('mousemove', function(e) {
-        if (isDragging) {
-            const deltaMove = {
-                x: e.offsetX - previousMousePosition.x,
-                y: e.offsetY - previousMousePosition.y
-            };
-
-            const deltaRotationQuaternion = new THREE.Quaternion()
-                .setFromEuler(new THREE.Euler(
-                    toRadians(deltaMove.y * 1),
-                    toRadians(deltaMove.x * 1),
-                    0,
-                    'XYZ'
-                ));
-
-            mesh.quaternion.multiplyQuaternions(deltaRotationQuaternion, mesh.quaternion);
+    // 5. Load 3D Model
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+        'github website/Keycap.glb', // Path to your .glb file
+        (gltf) => {
+            const model = gltf.scene;
+            scene.add(model);
+        },
+        undefined, // Progress callback (optional)
+        (error) => {
+            console.error('Error loading model:', error);
         }
+    );
 
-        previousMousePosition = {
-            x: e.offsetX,
-            y: e.offsetY
-        };
-    });
-
-    document.addEventListener('mouseup', function(e) {
-        isDragging = false;
-    });
-
-    // Window resize
-    window.addEventListener('resize', onWindowResize, false);
+    // 6. Add Orbit Controls
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; // Smooth movement
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 2; // Prevent zooming too close
+    controls.maxDistance = 10; // Prevent zooming too far
 }
 
+// Animation loop
 function animate() {
     requestAnimationFrame(animate);
+    controls.update(); // Required for damping
     renderer.render(scene, camera);
 }
 
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+// Handle window resizing
+window.addEventListener('resize', () => {
+    camera.aspect = 600 / 400; // Keep fixed container aspect ratio
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-function toRadians(angle) {
-    return angle * (Math.PI / 180);
-}
+    renderer.setSize(600, 400);
+});
