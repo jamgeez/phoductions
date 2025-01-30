@@ -4,6 +4,18 @@ init();
 animate();
 
 function init() {
+    import { OrbitControls } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js';
+    
+    const controls = new OrbitControls(camera, renderer.domElement);
+
+    import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/GLTFLoader.js';
+
+    const loader = new GLTFLoader();
+    loader.load("github website/Keycap.glb", (gltf) => {
+    const model = gltf.scene;
+    scene.add(model);
+    
+    });
     // Scene
     scene = new THREE.Scene();
 
@@ -21,7 +33,7 @@ function init() {
 
     // Texture
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load(github website/Keycap.glb); // Replace with your 360 image path
+    const texture = textureLoader.load("github website/Keycap.glb"); // Replace with your 360 image path
 
     // Material
     const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
